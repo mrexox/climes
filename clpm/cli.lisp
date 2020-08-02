@@ -1,22 +1,18 @@
-#!/usr/bin/env sbcl --script
-;;; -*- mode: lisp; -*-
+;;; Command Line Interface
 
-;;;
-;;; Variables
-;;;
-
-(defvar *lisp-interpreter* 'sbcl
+(defparameter *lisp-interpreter* 'sbcl
   "Lisp interpreter")
-(defvar *lisp-interpreter-version* 0
+(defparameter *lisp-interpreter-version* 0
   "Lisp interpreter version")
-(defvar *lisp-interpreter-version-restriction* '>=
-  "Lisp interpreter version sign")
-(defvar *production-dependencies* (list))
-(defvar *development-dependencies* (list))
+(defparameter *lisp-interpreter-version-restriction* '>=
+  "Lisp interpreter version restriction")
 
-;;;
+(defparameter *production-dependencies* (list)
+  "The list of production dependencies")
+(defparameter *development-dependencies* (list)
+  "The list of development dependencies")
+
 ;;; Helper functions
-;;;
 
 (defun lisp (&rest body)
   (assert (>= (length body) 2) ()
@@ -35,10 +31,3 @@
 
 (defun production (&rest systems))
 (defun development (&rest systems))
-
-;;;
-;;; Read systems.lisp
-;;;
-;;;
-;;; Eval systems.lisp
-;;;

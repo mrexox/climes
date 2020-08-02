@@ -1,11 +1,10 @@
 ;;; Common Lisp Systems (dependencies)
 
-(lisp 'sbcl '>= "3.3.0")
+(lisp 'sbcl '>= "2.0.1")
 
 (production
-  ('asdf "1.2.3")
-  ('hunchentoot '> "1.2.3")
-  ('alexandria '~= "3.2.1"))
+  ('hunchentoot '> "1.2.38")
+  ('alexandria '= "20191227-git"))
 
 (development
- ('dracula '= "2.3.4"))
+ ('drakma '= "2.0.7"))
