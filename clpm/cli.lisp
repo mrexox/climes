@@ -7,10 +7,8 @@
 (defparameter *lisp-interpreter-version-restriction* '>=
   "Lisp interpreter version restriction")
 
-(defparameter *production-dependencies* (list)
-  "The list of production dependencies")
-(defparameter *development-dependencies* (list)
-  "The list of development dependencies")
+(defparameter *scopes* (make-hash-table)
+  "The hash table of scoped dependencies")
 
 ;;; Helper functions
 
@@ -27,7 +25,20 @@
             ("Lisp version must have > >= < <= restriction. >= is used if not given")))
     (setq *lisp-interpreter* interpreter
           *lisp-interpreter-version* (or version restriction)
-          *list-interpreter-version-restriction* (if (null version) '>= restriction))))
+          *list-interpreter-version-restriction* (if (null version) '>= restriction)))
 
-(defun production (&rest systems))
-(defun development (&rest systems))
+(defun add-system-to-scope (&key scope name constraint version)
+  (let ((scope-metadata (or (gethash scope *scopes*))))
+    ;; TODO
+    ))
+
+
+(defmacro scope (key &rest systems)
+  (dolist (definition systems)
+    (let ((name (first definition))
+          (constraint (second definition))
+          (version (third definition)))
+      `(add-system-to-scope :scope key
+                            :name name
+                            :constraint constraint
+                            :version version))))
