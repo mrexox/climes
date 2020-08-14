@@ -1,54 +1,69 @@
 ;;;; Command Line Interface
 
-(defparameter *interpreter* '((:name . :sbcl))
-  "Lisp interpreter settings")
+(asdf:load-system :unix-opts)
 
-(defparameter *scopes* (make-hash-table)
-  "The hash table of scoped dependencies")
+(defconstant +program+ "clpm")
+(defconstant +usage+
+  (format nil "
+Usage:
+  ~a         -- same as '~a install'
+  ~a install -- install defined systems
+" +program+ +program+ +program+))
 
-;;; Parsing
+(defconstant +command-handlers+
+  '(("install" . #'install-dependencies)
+    (nil . #'install-dependencies)))
 
-;;; Set interpreter requirements
-;;;
-;;; Example:
-;;;   (lisp :sbcl >= "1.2.3")
-(defmacro lisp (&rest definition)
-  `(setf *interpreter* (remove-if #'(lambda (cell) (null (cdr cell)))
-                                  (list
-                                   (cons :name (first ',definition))
-                                   (cons :constraint (second ',definition))
-                                   (cons :version (third ',definition))))))
+;;; Define command line options
 
-(defun add-system-to-scope (&key scope name constraint version)
-  (let* ((scope-metadata (gethash scope *scopes*))
-         (new-scopep (null scope-metadata))
-         (metadata (remove-if #'(lambda (cell) (null (cdr cell)))
-                              (list
-                               (cons :constraint constraint)
-                               (cons :version version)))))
-    (when new-scopep
-      (setf scope-metadata (make-hash-table)))
-    (setf (gethash name scope-metadata) metadata)
-    (when new-scopep
-      (setf (gethash scope *scopes*) scope-metadata))))
+(opts:define-opts
+  (:name :help
+   :description +usage+
+   :short #\h
+   :long "help"))
 
-;;; Set dependencies by scope
-;;;
-;;; Example:
-;;;   (scope :development
-;;;     (:package-name >= "1.2.3"))
-;;;
-;;; Note:
-;;;   Use keywords for scope and package names
-(defmacro scope (key &rest systems)
-  (let ((name (gensym))
-        (constraint (gensym))
-        (version (gensym)))
-    `(dolist (definition ',systems)
-       (let ((,name (first definition))
-             (,constraint (second definition))
-             (,version (third definition)))
-         (add-system-to-scope :scope ,key
-                              :name ,name
-                              :constraint ,constraint
-                              :version ,version)))))
+;;; Handler functions
+
+(defun terminate (status)
+  #+sbcl     (           sb-ext:quit      :unix-status status)    ; SBCL
+  #+ccl      (              ccl:quit      status)                 ; Clozure CL
+  #+clisp    (              ext:quit      status)                 ; GNU CLISP
+  #+cmu      (             unix:unix-exit status)                 ; CMUCL
+  #+ecl      (              ext:quit      status)                 ; ECL
+  #+abcl     (              ext:quit      :status status)         ; Armed Bear CL
+  #+allegro  (             excl:exit      status :quiet t)        ; Allegro CL
+  #+gcl      (common-lisp-user::bye       status)                 ; GCL
+  #+ecl      (              ext:quit      status)                 ; ECL
+  (cl-user::quit))
+
+(defun print-usage ()
+  (format t +usage+)
+  (terminate 0))
+
+(defun unknown-option (condition)
+  (format t "warning: ~s option is unknown!~%" (opts:option condition))
+  (invoke-restart 'opts:skip-option))
+
+(defun install-dependencies ()
+  ;; TODO
+  )
+
+;;; Parse options
+
+(multiple-value-bind (options free-args)
+    (handler-bind ((opts:unknown-option #'unknown-option))
+      (opts:get-opts))
+
+  ;; Parse options
+  (let ((option (getf options :help)))
+    (when option
+      (print-usage)))
+
+  ;; Parse command
+  (let* ((command (first free-args))
+         ((handler (cdr (assoc command +command-handlers+ :test string=)))))
+    (if handler
+        (funcall handler)
+        (progn
+          (format t "Unknown command ~a", command)
+          (pring-usage)))))

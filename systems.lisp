@@ -2,9 +2,8 @@
 
 (lisp :sbcl >= "2.0.1")
 
-(scope :production
-  (:hunchentoot > "1.2.38")
-  (:alexandria = "20191227-git"))
+(scope :release
+  (:unix-opts = "2020-06-10"))
 
-(scope :development
+(scope :develop
  (:drakma = "2.0.7"))
