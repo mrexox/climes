@@ -2,4 +2,4 @@
   (:use :common-lisp)
   (:export :lisp
            :scope
-           :install-dependencies))
+           :install))

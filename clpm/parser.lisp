@@ -83,3 +83,6 @@
                             :name (first ,definition)
                             :git (find-by-key :git (cdr ,definition))
                             :tag (find-by-key :tag (cdr ,definition))))))
+
+(defun install (&key scope)
+  (format t "Installing scope: ~a ~%" scope))

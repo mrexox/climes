@@ -32,7 +32,14 @@
 # Currently only SBCL is supported, as the software development is in progress
 # Other Common Lisp realizations need code rework and testing
 
-cli=$(cat "${HOME}/quicklisp/dists/quicklisp/installed/systems/clpm.txt")/cli.lisp
+if [ -z "${DEBUG}" ]; then
+    cli=$(cat "${HOME}/quicklisp/dists/quicklisp/installed/systems/clpm.txt")/cli.lisp
+else
+    if [ -z "${cli}" ]; then
+        echo "Set 'cli' variable with path to cli.lisp, then execute with DEBUG=true"
+        exit 1
+    fi
+fi
 
 # Discover lisp
 sbcl=$(which sbcl)
@@ -41,8 +48,8 @@ if [ -n "${sbcl}" ]
 then
     "${sbcl}" --noinform \
               --non-interactive \
-              --eval '(ql:quickload :unix-opts)' \
               --load "${cli}" \
+              ${additional_arguments} \
               --end-toplevel-options "$@"
 else
     echo 'Install common lisp executable (sbcl)'

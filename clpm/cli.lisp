@@ -40,8 +40,8 @@ Usage:
 " +program+ +program+ +program+))
 
 (defconstant +command-handlers+
-  '(("install" . #'clpm:install)
-    (nil . #'clpm:install)))
+  (list (cons "install" #'clpm:install)
+        (cons nil       #'clpm:install)))
 
 ;;; Define command line options
 
@@ -52,7 +52,8 @@ Usage:
    :long "help")
   (:name :scope
    :description "Scope to install"
-   :shord #\s
+   :short #\s
+   :arg-parser #'identity
    :long "scope"))
 
 ;;; Handler functions
@@ -96,8 +97,8 @@ Usage:
 
   ;; Parse command
   (let* ((command (first free-args))
-         ((handler (cdr (assoc command +command-handlers+ :test string=)))))
+         (handler (cdr (assoc command +command-handlers+ :test #'string=))))
     (unless handler
-      (format t "Unknown command ~a", command)
-      (pring-usage))
+      (format t "Unknown command ~a" command)
+      (print-usage))
     (funcall handler :scope scope))))
