@@ -40,8 +40,8 @@ Usage:
 " +program+ +program+ +program+))
 
 (defconstant +command-handlers+
-  '(("install" . #'clpm:install-dependencies)
-    (nil . #'clpm:install-dependencies)))
+  '(("install" . #'clpm:install)
+    (nil . #'clpm:install)))
 
 ;;; Define command line options
 
@@ -49,7 +49,11 @@ Usage:
   (:name :help
    :description +usage+
    :short #\h
-   :long "help"))
+   :long "help")
+  (:name :scope
+   :description "Scope to install"
+   :shord #\s
+   :long "scope"))
 
 ;;; Handler functions
 
@@ -73,26 +77,27 @@ Usage:
   (format t "warning: ~s option is unknown!~%" (opts:option condition))
   (invoke-restart 'opts:skip-option))
 
-(defun install-dependencies ()
-  ;; TODO
-  )
-
 ;;; Parse options
 
 (multiple-value-bind (options free-args)
     (handler-bind ((opts:unknown-option #'unknown-option))
       (opts:get-opts))
+  (let ((scope nil))
 
-  ;; Parse options
-  (let ((option (getf options :help)))
-    (when option
-      (print-usage)))
+    ;; Parse scope
+    (let ((option (getf options :scope)))
+      (when option
+        (setf scope option)))
+
+    ;; Parse help
+    (let ((option (getf options :help)))
+      (when option
+        (print-usage)))
 
   ;; Parse command
   (let* ((command (first free-args))
          ((handler (cdr (assoc command +command-handlers+ :test string=)))))
-    (if handler
-        (funcall handler)
-        (progn
-          (format t "Unknown command ~a", command)
-          (pring-usage)))))
+    (unless handler
+      (format t "Unknown command ~a", command)
+      (pring-usage))
+    (funcall handler :scope scope))))
