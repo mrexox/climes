@@ -21,18 +21,22 @@
                                    (cons :constraint (second ',definition))
                                    (cons :version (third ',definition))))))
 
-(defun add-system-to-scope (&key scope name constraint version)
+(defun add-system-to-scope (&key scope name git tag)
   (let* ((scope-metadata (gethash scope *scopes*))
          (new-scopep (null scope-metadata))
          (metadata (remove-if #'(lambda (cell) (null (cdr cell)))
                               (list
-                               (cons :constraint constraint)
-                               (cons :version version)))))
+                               (cons :git git)
+                               (cons :tag tag)))))
     (when new-scopep
       (setf scope-metadata (make-hash-table)))
     (setf (gethash name scope-metadata) metadata)
     (when new-scopep
       (setf (gethash scope *scopes*) scope-metadata))))
+
+(defun find-by-key (key list)
+  (when list
+    (elt list (1+ (position key list :test #'eql)))))
 
 ;;; Set dependencies by scope
 ;;;
@@ -43,14 +47,9 @@
 ;;; Note:
 ;;;   Use keywords for scope and package names
 (defmacro scope (key &rest systems)
-  (let ((name (gensym))
-        (constraint (gensym))
-        (version (gensym)))
-    `(dolist (definition ',systems)
-       (let ((,name (first definition))
-             (,constraint (second definition))
-             (,version (third definition)))
-         (add-system-to-scope :scope ,key
-                              :name ,name
-                              :constraint ,constraint
-                              :version ,version)))))
+  (let ((definition (gensym)))
+    `(dolist (,definition ',systems)
+       (add-system-to-scope :scope ,key
+                            :name (first ,definition)
+                            :git (find-by-key :git (cdr ,definition))
+                            :tag (find-by-key :tag (cdr ,definition))))))

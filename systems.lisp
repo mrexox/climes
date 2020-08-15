@@ -1,9 +1,11 @@
 ;;; Common Lisp Systems (dependencies)
 
-(lisp :sbcl >= "2.0.1")
+(lisp :sbcl)
 
 (scope :release
-  (:unix-opts = "2020-06-10"))
+  (:unix-opts))
 
 (scope :develop
- (:drakma = "2.0.7"))
+  (:drakma)
+  (:some-lisp-package :git "https://github.com/some/lisp-package"
+                      :tag "v1.24"))

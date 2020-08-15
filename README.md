@@ -5,14 +5,18 @@ This project is in WIP status.
 ```lisp
 ;;; Common Lisp Systems (dependencies)
 
-(list :sbcl >= "2.0.1") ;; interpreter, constraint and version
+(lisp :sbcl) ;; interpreter, constraint and version
 
 ;;; You can define a special scope of packages
+;;; name - without any other settings: downloading from quicklisp
+;;; git - means cloning from git repository
+;;; tag - use specific git tag
 
 (scope :production
-  (:hunchentoot > "1.2.38")  ;; system with version constraint
-  (:alexandria))             ;; versions can be omited, the latest will be taken
+  (:hunchentoot)
+  (:alexandria :git "https://github.com/alexandria/cl-alexandria
+               :tag "v1.2.3"))
 
 (scope :development
-  (:drakma = "2.0.7"))  ;;
+  (:drakma))
 ```
