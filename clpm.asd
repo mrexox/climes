@@ -9,4 +9,5 @@
   :components ((:file "package")
                (:module "clpm"
                 :depends-on ("package")
-                :components ((:file "parser")))))
+                :components ((:file "parser")
+                             (:file "installer")))))

@@ -46,12 +46,18 @@ sbcl=$(which sbcl)
 
 if [ -n "${sbcl}" ]
 then
-    "${sbcl}" --noinform \
-              --non-interactive \
-              --load "${cli}" \
-              ${additional_arguments} \
-              --end-toplevel-options "$@"
+    cmd="${sbcl} --noinform
+              --non-interactive
+              --load ${cli}
+              ${additional_arguments}
+              --end-toplevel-options $@"
 else
     echo 'Install common lisp executable (sbcl)'
     exit 1
+fi
+
+if [ -n "${DEBUG}" ]; then
+    ${cmd}
+else
+    ${cmd} | grep -v ';'
 fi
