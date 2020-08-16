@@ -42,17 +42,17 @@
 
 (defun split (scopes)
   "Split string by comma (,)"
-  (flet ((emptyp (str) (zerop (length (string-trim '(#\Space #\Tab #\Newline) str))))
-         (getpos (lst &optional (start 0))
+  (flet ((empty (str) (zerop (length (string-trim '(#\Space #\Tab #\Newline) str))))
+         (index (lst &optional (start 0))
            (or (position #\, lst :start start)
                (length lst))))
-    (delete-if #'emptyp
+    (delete-if #'empty
                (delete-duplicates
-                (do* ((start 0 (1+ (getpos scopes start)))
-                      (end (getpos scopes) (getpos scopes start))
+                (do* ((start 0 (1+ (index scopes start)))
+                      (end (index scopes) (index scopes start))
                       (scope-list (list (subseq scopes start end))
                                   (cons (subseq scopes start end) scope-list)))
-                     ((= (getpos scopes start) (length scopes)) scope-list))
+                     ((= (index scopes start) (length scopes)) scope-list))
                 :test #'string=))))
 
 (defun curdir ()
