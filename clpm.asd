@@ -6,8 +6,8 @@
   :author "Valentine Kiselev <mrexox@yahoo.com>"
   :description "Common Lisp package manager (WIP)"
   :depends-on (#:unix-opts)
-  :components ((:file "package")
+  :components ((:file "packages")
                (:module "clpm"
-                :depends-on ("package")
+                :depends-on ("packages")
                 :components ((:file "parser")
                              (:file "installer")))))

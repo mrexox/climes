@@ -28,7 +28,7 @@
 ;;; NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 ;;; SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-(in-package :clpm)
+(in-package :clpm-interpreter)
 
 ;;; Parameters
 
@@ -38,6 +38,7 @@
 (defparameter *scopes* (make-hash-table)
   "The hash table of scoped dependencies")
 
+(defun get-scopes () *scopes*)
 ;;; Parsing code
 
 ;;; Set interpreter requirements
@@ -84,10 +85,21 @@
                             :git (find-by-key :git (cdr ,definition))
                             :tag (find-by-key :tag (cdr ,definition))))))
 
+(in-package :clpm)
+
+(defparameter *systems-filename* "systems.lisp"
+  "File with scopes definitions")
+
 (defun parse-systems (directory)
-  ;; TODO
-  )
+  (let ((*package* (find-package :clpm-interpreter)))
+    (with-open-file (in (merge-pathnames
+                         (concatenate 'string directory "/")
+                         *systems-filename*))
+      (loop for expression = (read in nil nil)
+            while expression
+            do (eval expression)))))
 
 (defun check-scopes (scopes)
-  ;; TODO
-  )
+  (let ((defined-scopes (clpm-interpreter:get-scopes)))
+    (loop for scope in scopes
+          do (format t "TODO"))))
