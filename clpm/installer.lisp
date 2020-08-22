@@ -42,12 +42,13 @@
 (defun split (scopes)
   "Split string by comma (,)"
   (when (not (null scopes))
-    (flet ((empty (str) (zerop (length (string-trim '(#\Space #\Tab #\Newline) str))))
+    (flet ((empty? (str)
+             (zerop (length (string-trim '(#\Space #\Tab #\Newline) str))))
            (index (lst &optional (start 0))
              (or (position #\, lst :start start)
                  (length lst))))
       (mapcar #'(lambda (s) (values (intern (string-upcase s) "KEYWORD")))
-              (delete-if #'empty
+              (delete-if #'empty?
                          (delete-duplicates
                           (do* ((start 0 (1+ (index scopes start)))
                                 (end (index scopes) (index scopes start))
@@ -86,8 +87,8 @@
 
 (defun install-scope (scope)
   "Install given scope (hash-table)"
-  (loop for system being the hash-keys in scope using (hash-value definition)
-        do (install-system system definition)))
+  (loop for system being the hash-value in scope
+        do (install-system system)))
 
-(defun install-system (system definition)
-  (format t "Installing ... ~(~a~)~@[: ~(~a~)~]~%" system definition))
+(defun install-system (system)
+  (format t "Installing ... ~(~a~)~@[: ~(~a~)~]~%" (name system) (source-type system)))

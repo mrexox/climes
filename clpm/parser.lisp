@@ -41,6 +41,26 @@
 (defun get-scopes () *scopes*)
 ;;; Parsing code
 
+(defclass system ()
+  ((name
+    :initarg :name
+    :initform (error "Must supply system name.")
+    :reader name)
+   (git
+    :initarg :git
+    :initform nil
+    :reader git)
+   (tag
+    :initarg :tag
+    :initform nil
+    :reader git-tag)))
+
+(defgeneric source-type (system))
+
+(defmethod source-type ((package system))
+  (cond ((not (null (git package))) :git)
+        (t :quicklisp)))
+
 ;;; Set interpreter requirements
 ;;;
 ;;; Example:
@@ -53,17 +73,17 @@
                                    (cons :version (third ',definition))))))
 
 (defun add-system-to-scope (&key scope name git tag)
-  (let* ((scope-metadata (gethash scope *scopes*))
-         (new-scopep (null scope-metadata))
-         (metadata (remove-if #'(lambda (cell) (null (cdr cell)))
-                              (list
-                               (cons :git git)
-                               (cons :tag tag)))))
-    (when new-scopep
-      (setf scope-metadata (make-hash-table)))
-    (setf (gethash name scope-metadata) metadata)
-    (when new-scopep
-      (setf (gethash scope *scopes*) scope-metadata))))
+  (let* ((definitions (gethash scope *scopes*))
+         (new-scope? (null definitions)))
+    (when new-scope?
+      (setf definitions (make-hash-table)))
+    (setf (gethash name definitions)
+          (make-instance 'system
+                         :name name
+                         :git git
+                         :tag tag))
+    (when new-scope?
+      (setf (gethash scope *scopes*) definitions))))
 
 (defun find-by-key (key list)
   (when list
