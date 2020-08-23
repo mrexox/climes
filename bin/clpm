@@ -59,7 +59,7 @@ else
 fi
 
 # Ignore debugger output by default
-if [ -n "${DEBUG}" ]
+if [ "${DEBUG}" == 'log' ]
 then
     ${cmd}
 else

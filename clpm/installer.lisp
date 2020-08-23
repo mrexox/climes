@@ -44,7 +44,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
           do (install-scope scope))))
 
 (defun split (scopes)
-  "Split string by comma (,)"
+  "Split string by comma (,) and return a list of keywords"
   (when (not (null scopes))
     (flet ((empty? (str)
              (zerop (length (string-trim '(#\Space #\Tab #\Newline) str))))
@@ -98,5 +98,5 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 (defgeneric install-system (system)
   (:documentation "Install system based on parsed parameters for it."))
 
-(defmethod install-system ((package system))
-  (format t "Installing ... ~(~a~)~@[: ~(~a~)~]~%" (name package) (source-type package)))
+(defmethod install-system ((system system))
+  (format t "Installing ... ~(~a~)~@[: ~(~a~)~]~%" (name system) (source-type system)))

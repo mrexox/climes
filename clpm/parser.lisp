@@ -59,6 +59,13 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     :initform nil
     :reader git-tag)))
 
+(defmethod print-object ((system system) stream)
+  (print-unreadable-object (system stream :type t)
+    (format stream "~(~s~): from ~(~a~)~@[ ~s~]"
+            (name system)
+            (source-type system)
+            (git system))))
+
 (defgeneric source-type (system)
   (:documentation
    "Get type of the source configured (or used by default) for the system."))

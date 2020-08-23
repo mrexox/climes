@@ -6,6 +6,6 @@
   (:unix-opts))
 
 (scope :develop
-  (:drakma)
-  (:some-lisp-package :git "https://github.com/some/lisp-package"
-                      :tag "v1.24"))
+  (:hunchentoot)
+  (:drakma :git "https://github.com/edicl/drakma"
+           :tag "v2.0.7"))
