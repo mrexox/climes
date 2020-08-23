@@ -68,12 +68,10 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 (defgeneric source-type (system)
   (:documentation
-   "Get type of the source configured (or used by default) for the system."))
-
-(defmethod source-type ((package system))
-  (cond ((not (null (git package))) :git)
-        (t :quicklisp)))
-
+   "Get type of the source configured (or used by default) for the system.")
+  (:method ((package system))
+    (cond ((not (null (git package))) :git)
+          (t :quicklisp))))
 
 (defmacro lisp (&rest definition)
   "(DEPRECATE) Specify lisp implementation and it's version"

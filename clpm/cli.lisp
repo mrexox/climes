@@ -39,9 +39,9 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 (defconstant +usage+
   (format nil "
 Usage:
-  ~a         -- same as '~a install'
+  ~a         -- same as ~:*'~a install'~:*
   ~a install -- install defined systems
-" +program+ +program+ +program+))
+" +program+))
 
 (defconstant +command-handlers+
   (list (cons "install" #'clpm:install)

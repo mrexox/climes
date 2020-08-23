@@ -34,11 +34,24 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 (in-package :clpm)
 
+(defparameter *file-does-not-exist-format*
+  "~&Systems definition is expected here ~s~%But file does not exist~%Exiting...~%")
+(defparameter *install-format*
+  "Installing ... ~(~a~)~@[: ~(~a~)~]~%")
+
+(define-condition file-does-not-exist ()
+  ((path
+    :initarg :path
+    :reader path)))
+
 (defun install (&key scope)
   "Install scope dependencies from systems file"
-  (parse-systems (curdir))
+  (handler-case (parse-systems (curdir))
+    (file-does-not-exist (e)
+      (format t *file-does-not-exist-format* (namestring (path e)))
+      (return-from install nil)))
   (let* ((scopes (check-scopes (split scope))))
-    (format t "Installing scopes: [~{~(~a~)~^, ~}]~%"
+    (format t "Scopes: [~{~(~a~)~^, ~}]~%"
             (loop for k being the hash-key in scopes collect k))
     (loop for scope being the hash-value in scopes
           do (install-scope scope))))
@@ -69,10 +82,13 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 (defun parse-systems (directory)
   "Parse systems file and save scopes"
-  (let ((*package* (find-package :clpm-interpreter)))
-    (with-open-file (in (merge-pathnames
+  (let ((*package* (find-package :clpm-interpreter))
+        (path (merge-pathnames
                          (concatenate 'string directory "/")
-                         *systems-filename*))
+                         *systems-filename*)))
+    (with-open-file (in path :if-does-not-exist nil)
+      (unless in
+        (error 'file-does-not-exist :path path))
       (loop for expression = (read in nil nil)
             while expression
             do (eval expression)))))
@@ -96,7 +112,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ;;; Installation of system
 (defgeneric install-system (system)
-  (:documentation "Install system based on parsed parameters for it."))
-
-(defmethod install-system ((system system))
-  (format t "Installing ... ~(~a~)~@[: ~(~a~)~]~%" (name system) (source-type system)))
+  (:documentation "Install system based on parsed parameters for it.")
+  (:method ((system system))
+    (format t *install-format* (name system) (source-type system))))
