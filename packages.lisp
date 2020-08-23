@@ -4,7 +4,8 @@
            :scope
            ;; reader of scopes hash-table
            :get-scopes
-           ;; 'system' class methods
+           ;; 'system' class
+           :system
            :name
            :source-type
            :git
@@ -14,6 +15,7 @@
   (:use :common-lisp)
   (:export :install)
   (:import-from :clpm-interpreter
+                :system
                 :name
                 :source-type
                 :git
