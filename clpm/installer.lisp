@@ -37,28 +37,31 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 (defparameter *file-does-not-exist-format*
   "~&Systems definition is expected here ~s~%But file does not exist~%Exiting...~%")
 (defparameter *install-format*
-  "Installing ... ~(~a~)~@[: ~(~a~)~]~%")
+  "Installing ~(~a~) ... ")
+(defparameter *systems-filename* "systems.lisp"
+  "Name of systems file with systems scopes.")
 
 (define-condition file-does-not-exist ()
   ((path
     :initarg :path
     :reader path)))
 
-(defun install (&key scope)
-  "Install scope dependencies from systems file"
+(defun install (&key ((:scope raw-scopes)))
+  "Install scope dependencies from systems file.
+Returned value of this function is used as return value for the shell call."
   (handler-case (parse-systems (curdir))
     (file-does-not-exist (e)
       (format t *file-does-not-exist-format* (namestring (path e)))
-      (return-from install nil)))
-  (let* ((scopes (check-scopes (split scope))))
+      (return-from install 1)))
+  (let* ((scopes (check-scopes (split raw-scopes))))
     (format t "Scopes: [~{~(~a~)~^, ~}]~%"
             (loop for k being the hash-key in scopes collect k))
     (loop for scope being the hash-value in scopes
           do (install-scope scope))))
 
-(defun split (scopes)
-  "Split string by comma (,) and return a list of keywords"
-  (when (not (null scopes))
+(defun split (raw-scopes)
+  "Split string by comma (,) and return a list of keywords."
+  (when (not (null raw-scopes))
     (flet ((empty? (str)
              (zerop (length (string-trim '(#\Space #\Tab #\Newline) str))))
            (index (lst &optional (start 0))
@@ -67,21 +70,18 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
       (mapcar #'(lambda (s) (values (intern (string-upcase s) "KEYWORD")))
               (delete-if #'empty?
                          (delete-duplicates
-                          (do* ((start 0 (1+ (index scopes start)))
-                                (end (index scopes) (index scopes start))
-                                (scope-list (list (subseq scopes start end))
-                                            (cons (subseq scopes start end) scope-list)))
-                               ((= (index scopes start) (length scopes)) scope-list))
+                          (do* ((start 0 (1+ (index raw-scopes start)))
+                                (end (index raw-scopes) (index raw-scopes start))
+                                (scope-list (list (subseq raw-scopes start end))
+                                            (cons (subseq raw-scopes start end) scope-list)))
+                               ((= (index raw-scopes start) (length raw-scopes)) scope-list))
                           :test #'string=))))))
 
 (defun curdir ()
   (uiop:getenv "PWD"))
 
-(defparameter *systems-filename* "systems.lisp"
-  "Name of systems file with systems scopes")
-
 (defun parse-systems (directory)
-  "Parse systems file and save scopes"
+  "Parse systems file and save scopes."
   (let ((*package* (find-package :clpm-interpreter))
         (path (merge-pathnames
                          (concatenate 'string directory "/")
@@ -94,7 +94,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
             do (eval expression)))))
 
 (defun check-scopes (scopes)
-  "Checks if scopes are defined in systems file or return them all as hash-table"
+  "Checks if scopes are defined in systems file or return them all as hash-table."
   (let ((defined-scopes (clpm-interpreter:get-scopes)))
     (if (null scopes)
         defined-scopes
@@ -106,12 +106,29 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
           filtered-scopes))))
 
 (defun install-scope (scope)
-  "Install given scope (hash-table of system objects)"
+  "Install given scope (hash-table of system objects)."
   (loop for system being the hash-value in scope
         do (install-system system)))
 
-;;; Installation of system
 (defgeneric install-system (system)
-  (:documentation "Install system based on parsed parameters for it.")
+  (:documentation "Install system based on given parameters.")
   (:method ((system system))
-    (format t *install-format* (name system) (source-type system))))
+    (format t *install-format* (name system))
+     (case (source-type system)
+       ;; This call may cause an exception, not handled yet
+       (:quicklisp (quicklisp-install system))
+       (:git (git-install system)))))
+
+(defgeneric quicklisp-install (system)
+  (:documentation "")
+  (:method ((system system))
+    (handler-case (ql:quickload (name system) :silent t)
+      (ql:system-not-found ()
+        (format t "NOT FOUND~%")))))
+
+(defgeneric git-install (system)
+  (:documentation "Install system from git.")
+  (:method ((system system))
+    ;; TODO
+    (format t "DONE~%")
+    ))

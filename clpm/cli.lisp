@@ -105,4 +105,4 @@ Usage:
     (unless handler
       (format t "Unknown command ~a" command)
       (print-usage))
-    (funcall handler :scope scope))))
+    (opts:exit (funcall handler :scope scope)))))
