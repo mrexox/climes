@@ -34,7 +34,7 @@
 
 if [ -z "${DEBUG}" ]
 then
-    cli=$(cat "${HOME}/quicklisp/dists/quicklisp/installed/systems/clpm.txt")/cli.lisp
+    cli=$(cat "${HOME}/quicklisp/dists/quicklisp/installed/systems/climes.txt")/cli.lisp
 else
     if [ -z "${cli}" ]
     then

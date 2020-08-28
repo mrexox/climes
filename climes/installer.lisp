@@ -1,6 +1,6 @@
 #|
 
-Installer for CLPM
+Installer for Climes
 
 Copyright (c) 2020, Valentine Kiselev
 
@@ -14,7 +14,7 @@ are permitted provided that the following conditions are met:
     * Redistributions in binary form must reproduce the above copyright notice,
       this list of conditions and the following disclaimer in the documentation
       and/or other materials provided with the distribution.
-    * Neither the name of clpm nor the names of its contributors
+    * Neither the name of climes nor the names of its contributors
       may be used to endorse or promote products derived from this software
       without specific prior written permission.
 
@@ -32,7 +32,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 |#
 
-(in-package :clpm)
+(in-package :climes)
 
 (defparameter *file-does-not-exist-format*
   "~&Systems definition is expected here ~s~%But file does not exist~%Exiting...~%")
@@ -82,7 +82,7 @@ Returned value of this function is used as return value for the shell call."
 
 (defun parse-systems (directory)
   "Parse systems file and save scopes."
-  (let ((*package* (find-package :clpm-interpreter))
+  (let ((*package* (find-package :climes-interpreter))
         (path (merge-pathnames
                          (concatenate 'string directory "/")
                          *systems-filename*)))
@@ -95,7 +95,7 @@ Returned value of this function is used as return value for the shell call."
 
 (defun check-scopes (scopes)
   "Checks if scopes are defined in systems file or return them all as hash-table."
-  (let ((defined-scopes (clpm-interpreter:get-scopes)))
+  (let ((defined-scopes (climes-interpreter:get-scopes)))
     (if (null scopes)
         defined-scopes
         (let ((filtered-scopes (make-hash-table)))

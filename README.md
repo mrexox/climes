@@ -26,10 +26,10 @@ Filename: `systems.lisp`
 ## Usage
 
 ```bash
-$ clpm install # install systems within all scopes
-$ clpm install --scope=production,development # install only given scope(s)
+$ climes install # install systems within all scopes
+$ climes install --scope=production,development # install only given scope(s)
 
-# You can also just call clpm:
+# You can also just call climes:
 
-$ clpm # executes install by default
+$ climes # executes install by default
 ```

@@ -1,4 +1,4 @@
-(defpackage :clpm-interpreter
+(defpackage :climes-interpreter
   (:use :common-lisp)
   (:export :lisp
            :scope
@@ -11,10 +11,10 @@
            :git
            :tag))
 
-(defpackage :clpm
+(defpackage :climes
   (:use :common-lisp)
   (:export :install)
-  (:import-from :clpm-interpreter
+  (:import-from :climes-interpreter
                 :system
                 :name
                 :source-type
