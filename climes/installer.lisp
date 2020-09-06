@@ -117,18 +117,28 @@ Returned value of this function is used as return value for the shell call."
      (case (source-type system)
        ;; This call may cause an exception, not handled yet
        (:quicklisp (quicklisp-install system))
-       (:git (git-install system)))))
+       (:git       (git-install system)))))
 
 (defgeneric quicklisp-install (system)
-  (:documentation "")
+  (:documentation "Install system via quicklisp.")
   (:method ((system system))
     (handler-case (ql:quickload (name system) :silent t)
       (ql:system-not-found ()
-        (format t "NOT FOUND~%")))))
+        (format t "Not found~%"))
+      (:no-error (_res) (format t "Done~%")))))
 
 (defgeneric git-install (system)
-  (:documentation "Install system from git.")
+  (:documentation "Install system from git sources.")
   (:method ((system system))
-    ;; TODO
-    (format t "DONE~%")
-    ))
+    (uiop:with-current-directory ("~/common-lisp")
+      (multiple-value-bind (stdout stderr exit-code)
+          (uiop:run-program
+           (concatenate 'list
+                        '("git" "clone")
+                        (when (git-tag system) (list "-b" (git-tag system)))
+                        (list (git system)))
+           :ignore-error-status t
+           :force-shell t)
+        (if (= exit-code 0)
+            (format t "Done~%")
+            (format t "FAILED: git exit code ~a~%" exit-code))))))
