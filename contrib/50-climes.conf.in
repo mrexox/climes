@@ -1,0 +1,13 @@
+;; On a production system replace this with actual location such as
+;;
+;; (:tree "/usr/lib/clpm")
+;;
+;; This file must be in this folder:
+;;
+;; /etc/common-lisp/source-registry.conf.d/
+
+(:tree (:home "%PATH%"))
+
+;; For more information look for documentation of ASDF system:
+;; - https://common-lisp.net/project/asdf/asdf/Configuration-Directories.html
+;; - https://common-lisp.net/project/asdf/asdf/Configuring-ASDF-to-find-your-systems.html
