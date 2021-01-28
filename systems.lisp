@@ -4,7 +4,8 @@
 
 (scope :release
        (:unix-opts)
-       (:alexandria :git "https://gitlab.common-lisp.net/alexandria/alexandria.git"))
+       (:alexandria :git "https://gitlab.common-lisp.net/alexandria/alexandria.git"
+                    :ref "v1.2"))
 
 (scope :develop
   (:hunchentoot)

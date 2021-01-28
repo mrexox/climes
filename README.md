@@ -1,6 +1,8 @@
-This project is in WIP status.
+# Climes
 
-## Definition of packages
+Making dependencies managing easier in Common Lisp
+
+## Package definition
 
 Filename: `systems.lisp`
 
@@ -9,15 +11,17 @@ Filename: `systems.lisp`
 
 (lisp :sbcl) ;; interpreter, constraint and version
 
-;;; You can define a special scope of packages
-;;; name - without any other settings: downloading from quicklisp
-;;; git - means cloning from git repository
-;;; tag - use specific git tag
+;;; You can define a special scopes of packages and install them separately
+
+;;; To define a dedendency use there options
+;;; name - without any other options just installing via quicklisp
+;;; :git - means cloning from git repository
+;;; :ref - use specific git branch or tag
 
 (scope :production
   (:hunchentoot)
   (:alexandria :git "https://github.com/alexandria/cl-alexandria
-               :tag "v1.2.3"))
+               :ref "v1.2"))
 
 (scope :development
   (:drakma))
@@ -33,3 +37,8 @@ $ climes install --scope=production,development # install only given scope(s)
 
 $ climes # executes install by default
 ```
+
+## :warning: Known issues
+
+- If you specify `:git` option you may find out that packages are not scoped in projects. E.g if you have two projects with different versions of packages - it will use one (`ls ~/common-lisp` - alphabetically first is going to be used)
+- Dependencies for packages installed via git are managed via quicklisp only now
