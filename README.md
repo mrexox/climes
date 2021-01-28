@@ -27,6 +27,15 @@ Filename: `systems.lisp`
   (:drakma))
 ```
 
+## Install
+
+```bash
+make install
+
+# Or for development use
+make dev_install
+```
+
 ## Usage
 
 ```bash
