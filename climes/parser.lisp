@@ -54,10 +54,10 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     :initarg :git
     :initform nil
     :reader git)
-   (tag
-    :initarg :tag
+   (ref
+    :initarg :ref
     :initform nil
-    :reader git-tag)))
+    :reader git-ref)))
 
 (defmethod print-object ((system system) stream)
   (print-unreadable-object (system stream :type t)
@@ -81,7 +81,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
                                    (cons :constraint (second ',definition))
                                    (cons :version (third ',definition))))))
 
-(defun add-system-to-scope (&key scope name git tag)
+(defun add-system-to-scope (&key scope name git ref)
   (let* ((definitions (gethash scope *scopes*))
          (new-scope? (null definitions)))
     (when new-scope?
@@ -90,14 +90,16 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
           (make-instance 'system
                          :name name
                          :git git
-                         :tag tag))
+                         :ref ref))
     (when new-scope?
       (setf (gethash scope *scopes*) definitions))))
 
 (defun find-by-key (key list)
   "Find the next value after keyword parameter `key' in `list'"
   (when list
-    (elt list (1+ (position key list :test #'eql)))))
+    (let ((pos (position key list :test #'eql)))
+      (if pos
+          (elt list (1+ pos))))))
 
 ;;; Set dependencies by scope
 ;;;
@@ -113,4 +115,4 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
        (add-system-to-scope :scope ,key
                             :name (first ,definition)
                             :git (find-by-key :git (cdr ,definition))
-                            :tag (find-by-key :tag (cdr ,definition))))))
+                            :ref (find-by-key :ref (cdr ,definition))))))

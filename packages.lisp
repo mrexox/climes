@@ -9,7 +9,7 @@
            :name
            :source-type
            :git
-           :git-tag))
+           :git-ref))
 
 (defpackage :climes
   (:use :common-lisp)
@@ -19,4 +19,4 @@
                 :name
                 :source-type
                 :git
-                :git-tag))
+                :git-ref))

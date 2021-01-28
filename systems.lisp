@@ -3,9 +3,10 @@
 (lisp :sbcl)
 
 (scope :release
-  (:unix-opts))
+       (:unix-opts)
+       (:alexandria :git "https://gitlab.common-lisp.net/alexandria/alexandria.git"))
 
 (scope :develop
   (:hunchentoot)
   (:drakma :git "https://github.com/edicl/drakma"
-           :tag "v2.0.7"))
+           :ref "v2.0.7"))

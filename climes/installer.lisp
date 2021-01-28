@@ -110,6 +110,11 @@ Returned value of this function is used as return value for the shell call."
   (loop for system being the hash-value in scope
         do (install-system system)))
 
+(defun system-version (system-designator)
+  (let ((system (asdf:find-system system-designator nil)))
+    (when (and system (slot-boundp system 'asdf:version))
+      (asdf:component-version system))))
+
 (defgeneric install-system (system)
   (:documentation "Install system based on given parameters.")
   (:method ((system system))
@@ -125,20 +130,43 @@ Returned value of this function is used as return value for the shell call."
     (handler-case (ql:quickload (name system) :silent t)
       (ql:system-not-found ()
         (format t "Not found~%"))
-      (:no-error (_res) (format t "Done~%")))))
+      (:no-error (_res) (format t "~a Done~%" (system-version (name system)))))))
 
+;; Install source into ~/common-lisp/ directory and quickload them
+;; FIXME: multiple versions ?
+;; FIXME: dependencies across many packages ?
 (defgeneric git-install (system)
   (:documentation "Install system from git sources.")
   (:method ((system system))
-    (uiop:with-current-directory ("~/common-lisp")
-      (multiple-value-bind (stdout stderr exit-code)
-          (uiop:run-program
-           (concatenate 'list
-                        '("git" "clone")
-                        (when (git-tag system) (list "-b" (git-tag system)))
-                        (list (git system)))
-           :ignore-error-status t
-           :force-shell t)
-        (if (= exit-code 0)
-            (format t "Done~%")
-            (format t "FAILED: git exit code ~a~%" exit-code))))))
+    (let ((system-destination-dir (concatenate
+                                   'string
+                                   (string-downcase (name system))
+                                   (when (git-ref system) "_")
+                                   (when (git-ref system) (git-ref system)))))
+      (uiop:with-current-directory ("~/common-lisp/")
+        (unless (probe-file system-destination-dir)
+          (multiple-value-bind (stdout stderr exit-code)
+
+              ;; Checkout git project with a given ref
+              (uiop:run-program
+               (flatten
+                (list "git" "clone"
+                      (when (git-ref system) (list "-b" (git-ref system)))
+                      (git system)
+                      system-destination-dir))
+               :ignore-error-status t
+               :force-shell t
+               :error-output '(:string :stripped t))
+
+            ;; Want to be verbose as much as possible
+            (unless (= exit-code 0)
+              (format t "FAILED: git exit code ~a~%  ERROR-MESSAGE: ~a~%" exit-code stderr)))))
+
+      ;; Quicklisp finishes dependencies installing
+      ;; TODO: Add climes method to fetch dependencies too
+      (quicklisp-install system))))
+
+
+(defun flatten (l)
+  (flet ((to-list (x) (if (listp x) x (list x))))
+    (mapcan #'(lambda (x) (if (atom x) (to-list x) (flatten x))) l)))
