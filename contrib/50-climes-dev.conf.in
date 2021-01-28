@@ -1,6 +1,6 @@
 ;; On a production system replace this with actual location such as
 ;;
-;; (:tree "/usr/lib/clpm")
+;; (:tree "/usr/lib/climes")
 ;;
 ;; This file must be in this folder:
 ;;
