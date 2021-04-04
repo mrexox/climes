@@ -34,7 +34,7 @@
 
 if [ -z "${DEBUG}" ]
 then
-    cli='%CLIMES_PATH%/climes/cli.lisp'
+    cli='%CLIMES_PATH%/src/cli.lisp'
 else
     if [ -z "${cli}" ]
     then

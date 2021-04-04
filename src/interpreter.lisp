@@ -45,34 +45,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 (defun get-scopes () *scopes*)
 ;;; Parsing code
 
-(defclass system ()
-  ((name
-    :initarg :name
-    :initform (error "Must supply system name.")
-    :reader name)
-   (git
-    :initarg :git
-    :initform nil
-    :reader git)
-   (ref
-    :initarg :ref
-    :initform nil
-    :reader git-ref)))
-
-(defmethod print-object ((system system) stream)
-  (print-unreadable-object (system stream :type t)
-    (format stream "~(~s~): from ~(~a~)~@[ ~s~]"
-            (name system)
-            (source-type system)
-            (git system))))
-
-(defgeneric source-type (system)
-  (:documentation
-   "Get type of the source configured (or used by default) for the system.")
-  (:method ((package system))
-    (cond ((not (null (git package))) :git)
-          (t :quicklisp))))
-
 (defmacro lisp (&rest definition)
   "(DEPRECATE) Specify lisp implementation and it's version"
   `(setf *interpreter* (remove-if #'(lambda (cell) (null (cdr cell)))

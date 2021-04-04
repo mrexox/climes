@@ -34,17 +34,31 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 (in-package :climes)
 
+;;; ===========================================================================
+;;; Parameters
+;;; ===========================================================================
+
 (defparameter *file-does-not-exist-format*
   "~&Systems definition is expected here ~s~%But file does not exist~%Exiting...~%")
+
 (defparameter *install-format*
   "Installing ~(~a~) ... ")
+
 (defparameter *systems-filename* "systems.lisp"
   "Name of systems file with systems scopes.")
+
+;;; ===========================================================================
+;;; Conditions
+;;; ===========================================================================
 
 (define-condition file-does-not-exist ()
   ((path
     :initarg :path
     :reader path)))
+
+;;; ===========================================================================
+;;; Installer logic
+;;; ===========================================================================
 
 (defun install (&key ((:scope raw-scopes)))
   "Install scope dependencies from systems file.
@@ -108,65 +122,6 @@ Returned value of this function is used as return value for the shell call."
 (defun install-scope (scope)
   "Install given scope (hash-table of system objects)."
   (loop for system being the hash-value in scope
-        do (install-system system)))
-
-(defun system-version (system-designator)
-  (let ((system (asdf:find-system system-designator nil)))
-    (when (and system (slot-boundp system 'asdf:version))
-      (asdf:component-version system))))
-
-(defgeneric install-system (system)
-  (:documentation "Install system based on given parameters.")
-  (:method ((system system))
-    (format t *install-format* (name system))
-     (case (source-type system)
-       ;; This call may cause an exception, not handled yet
-       (:quicklisp (quicklisp-install system))
-       (:git       (git-install system)))))
-
-(defgeneric quicklisp-install (system)
-  (:documentation "Install system via quicklisp.")
-  (:method ((system system))
-    (handler-case (ql:quickload (name system) :silent t)
-      (ql:system-not-found ()
-        (format t "Not found~%"))
-      (:no-error (_res) (format t "~a Done~%" (system-version (name system)))))))
-
-;; Install source into ~/common-lisp/ directory and quickload them
-;; FIXME: multiple versions ?
-;; FIXME: dependencies across many packages ?
-(defgeneric git-install (system)
-  (:documentation "Install system from git sources.")
-  (:method ((system system))
-    (let ((system-destination-dir (concatenate
-                                   'string
-                                   (string-downcase (name system))
-                                   (when (git-ref system) "_")
-                                   (when (git-ref system) (git-ref system)))))
-      (uiop:with-current-directory ("~/common-lisp/")
-        (unless (probe-file system-destination-dir)
-          (multiple-value-bind (stdout stderr exit-code)
-
-              ;; Checkout git project with a given ref
-              (uiop:run-program
-               (flatten
-                (list "git" "clone"
-                      (when (git-ref system) (list "-b" (git-ref system)))
-                      (git system)
-                      system-destination-dir))
-               :ignore-error-status t
-               :force-shell t
-               :error-output '(:string :stripped t))
-
-            ;; Want to be verbose as much as possible
-            (unless (= exit-code 0)
-              (format t "FAILED: git exit code ~a~%  ERROR-MESSAGE: ~a~%" exit-code stderr)))))
-
-      ;; Quicklisp finishes dependencies installing
-      ;; TODO: Add climes method to fetch dependencies too
-      (quicklisp-install system))))
-
-
-(defun flatten (l)
-  (flet ((to-list (x) (if (listp x) x (list x))))
-    (mapcan #'(lambda (x) (if (atom x) (to-list x) (flatten x))) l)))
+     do (progn
+          (format t *install-format* (name system))
+          (install-system system))))

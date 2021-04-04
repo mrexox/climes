@@ -1,22 +1,29 @@
+(defpackage :climes-system
+  (:use :common-lisp)
+  (:export :system
+           :name
+           :git
+           :git-ref
+           :source-type
+           :print-object
+           :install-system
+           :quicklisp-install
+           :git-install))
+
 (defpackage :climes-interpreter
   (:use :common-lisp)
   (:export :lisp
            :scope
            ;; reader of scopes hash-table
-           :get-scopes
-           ;; 'system' class
-           :system
-           :name
-           :source-type
-           :git
-           :git-ref))
-
-(defpackage :climes
-  (:use :common-lisp)
-  (:export :install)
-  (:import-from :climes-interpreter
+           :get-scopes)
+  (:import-from :climes-system
                 :system
                 :name
-                :source-type
                 :git
-                :git-ref))
+                :git-ref
+                :source-type))
+
+(defpackage :climes
+  (:use :common-lisp
+        :climes-system)
+  (:export :install))
