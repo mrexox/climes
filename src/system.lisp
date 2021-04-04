@@ -1,4 +1,12 @@
+#|
+Climes
+
+Copyright (c) 2021, Valentine Kiselev
+|#
+
 (in-package :climes-system)
+
+(defvar *asdf-user-directory* "~/common-lisp/")
 
 (defclass system ()
   ((name
@@ -15,15 +23,17 @@
     :reader git-ref)))
 
 (defmethod print-object ((system system) stream)
+  "Pring system in readable way"
   (print-unreadable-object (system stream :type t)
-    (format stream "~(~s~): from ~(~a~)~@[ ~s~]"
+    (format stream "~(~s~): from ~(~a~)~@[ ~s~]~@[ ref: ~a~]"
             (name system)
             (source-type system)
-            (git system))))
+            (git system)
+            (git-ref system))))
 
 (defgeneric source-type (system)
   (:documentation
-   "Get type of the source configured (or used by default) for the system.")
+   "Get type of the source configured for the system.")
   (:method ((package system))
     (cond ((not (null (git package))) :git)
           (t :quicklisp))))
@@ -32,7 +42,7 @@
   (:documentation "Install system based on given parameters.")
   (:method ((system system))
     (case (source-type system)
-      ;; This call may cause an exception, not handled yet
+      ;; FIXME: This call may cause an exception, not handled yet
       (:quicklisp (quicklisp-install system))
       (:git       (git-install system)))))
 
@@ -45,8 +55,8 @@
       (:no-error (_res) (format t "~a Done~%" (system-version (name system)))))))
 
 ;; Install source into ~/common-lisp/ directory and quickload them
-;; FIXME: multiple versions ?
-;; FIXME: dependencies across many packages ?
+;; FIXME: support multiple versions
+;; FIXME: support dependencies across packages
 (defgeneric git-install (system)
   (:documentation "Install system from git sources.")
   (:method ((system system))
@@ -55,7 +65,8 @@
                                    (string-downcase (name system))
                                    (when (git-ref system) "_")
                                    (when (git-ref system) (git-ref system)))))
-      (uiop:with-current-directory ("~/common-lisp/")
+      (ensure-directories-exist *asdf-user-directory*)
+      (uiop:with-current-directory (*asdf-user-directory*)
         (unless (probe-file system-destination-dir)
           (multiple-value-bind (stdout stderr exit-code)
 
