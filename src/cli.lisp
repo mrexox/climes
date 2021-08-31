@@ -4,6 +4,7 @@ Command Line Interface for Climes
 Copyright (c) 2021, Valentine Kiselev
 |#
 
+;; No warning messages
 #+sbcl (sb-ext:disable-debugger)
 #+sbcl (declaim (sb-ext:muffle-conditions cl:warning))
 
@@ -50,15 +51,13 @@ Copyright (c) 2021, Valentine Kiselev
     (funcall handler arguments)))
 
 (defun opt-looks-like (option)
-  (if (string= option "--" :start1 0 :end1 2)
-      'LONGOPT
-      (if (string= option "-" :start1 0 :end1 1)
-          'SHORTOPT
-          'COMMAND)))
+  (cond
+    ((string= option "--" :start1 0 :end1 2) :longopt)
+    ((string= option "-"  :start1 0 :end1 1) :shortopt)
+    (t :command)))
 
 (defvar *options*
   '(("s" . :scope) ("scope" . :scope)))
-
 
 (let ((arguments (make-hash-table))
       (command nil)
@@ -83,8 +82,8 @@ Copyright (c) 2021, Valentine Kiselev
           else
             do (let ((opt-type (opt-looks-like opt)))
                  (cond
-                   ((eql opt-type 'SHORTOPT) (handle-short-option opt rest))
-                   ((eql opt-type 'LONGOPT) (handle-long-option opt rest))
-                   ((eql opt-type 'COMMAND) (handle-command opt)))))
+                   ((eql opt-type :shortopt) (handle-short-option opt rest))
+                   ((eql opt-type :longopt) (handle-long-option opt rest))
+                   ((eql opt-type :command) (handle-command opt)))))
 
     (call-handler command arguments)))
